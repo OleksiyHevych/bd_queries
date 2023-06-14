@@ -1,4 +1,4 @@
-*Lab 1*
+		*Lab 1*
 use Labs
 CREATE TABLE conference (
   id_conference INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE performer_section (
   FOREIGN KEY (performer_id) REFERENCES speaker(id_speaker),
   FOREIGN KEY (section_id) REFERENCES section(id_section)
 );
-*Insert*
+		*Insert*
 -- Insert data into the conference table
 INSERT INTO conference (name_conference, period_start, period_end, building, rating_of_conference)
 VALUES ( 'Tech Conference 2023', '2023-10-01', '2023-10-03', 'Conference Center A', '9.8'),
@@ -102,4 +102,279 @@ INSERT INTO performer_section (performer_id, section_id, date)
 VALUES (1, 1, '2023-10-01'),
        (2, 2, '2023-10-02'),
        (3, 2, '2023-10-02');
-*Lab2*
+		*Lab 2*
+--use Labs
+--SELECT *
+--FROM performance
+--WHERE start_time = '2023-10-01 09:00:00.000' OR start_time = '2023-10-02 10:00:00.000'
+--ORDER BY topic ASC;
+
+--SELECT topic, start_time, duration, start_time + duration  AS end_time
+--FROM performance;
+
+--SELECT p.*, s.name_section AS section_name
+--FROM performance p
+--JOIN section s ON p.section_id = s.id_section
+--WHERE p.topic LIKE '%AI%' AND s.conference_id IN (
+--    SELECT id_conference FROM conference WHERE building = 'Conference Center B'
+--)
+--ORDER BY p.start_time ASC;
+
+--SELECT e.name AS equipment_name, SUM(p.duration) AS total_duration
+--FROM performance p
+--JOIN performance_equipment pe ON p.id_perfomance = pe.performance_id
+--JOIN equipment e ON pe.equipment_id = e.id_equipment
+--GROUP BY e.name;
+
+---- Retrieve all equipment, and the number of times it has been used in performances
+--SELECT eq.*, COUNT(pe.equipment_id) AS usage_count FROM equipment eq
+--LEFT JOIN performance_equipment pe ON eq.id_equipment = pe.equipment_id
+--GROUP BY eq.id_equipment,eq.name;
+
+---- Retrieve all sections, and their associated conference name (if available)
+--SELECT s.*, c.name_conference AS conference_name FROM section s
+--JOIN conference c ON s.conference_id = c.id_conference;
+
+--SELECT p.*, s.name_speaker 
+--FROM performance p
+--JOIN speaker s ON s.id_speaker=p.speaker_id
+--WHERE start_time BETWEEN '2023-10-01 09:00:00' AND '2023-10-02 12:00:00'
+--AND name_speaker IN (
+--    SELECT name_speaker FROM speaker WHERE scientific_degree IN ('PhD', 'MD')
+--);
+
+--SELECT  s.id_section , s.name_section, SUM(p.duration) AS total_duration
+--FROM performance p
+--JOIN section s ON p.section_id = s.id_section
+--GROUP BY  s.id_section, s.name_section;
+
+--SELECT * 
+--FROM performance
+--WHERE id_perfomance IN (SELECT performance_id FROM performance_equipment WHERE equipment_id IN (SELECT id_equipment FROM equipment WHERE name = 'Projector'));
+
+---- Find the speaker who has given the most performances in all sections
+--SELECT s.name_speaker, COUNT(p.id_perfomance) AS num_performances
+--FROM speaker s, performance p
+--WHERE s.id_speaker = p.speaker_id
+--GROUP BY s.id_speaker, s.name_speaker
+--HAVING COUNT(p.id_perfomance) = (SELECT MAX(num_performances) FROM (SELECT COUNT(*) AS num_performances FROM performance GROUP BY speaker_id) AS temp);
+
+--SELECT *
+--FROM conference c
+--FULL JOIN section s ON c.id_conference = s.conference_id
+--FULL JOIN performance p ON s.id_section = p.section_id;
+
+
+---- Display a summary of the equipment used in each section of a conference
+--SELECT 
+--  s.conference_id, 
+--  s.id_section AS section_id,
+--  s.name_section AS section_name,
+--  SUM(CASE WHEN e.name = 'Projector' THEN 1 ELSE 0 END) AS num_projectors,
+--  SUM(CASE WHEN e.name = 'Microphone' THEN 1 ELSE 0 END) AS num_microphones,
+--  SUM(CASE WHEN e.name = 'Laptop' THEN 1 ELSE 0 END) AS num_laptops
+--FROM section s 
+--LEFT JOIN performance p ON s.id_section = p.section_id
+--LEFT JOIN performance_equipment pe ON p.id_perfomance = pe.performance_id
+--LEFT JOIN equipment e ON pe.equipment_id = e.id_equipment
+--GROUP BY s.conference_id, s.id_section,s.name_section
+--ORDER BY s.conference_id, s.id_section,s.name_section;
+
+---- Update the position of the speaker with id=3 to 'Associate Professor'
+--UPDATE speaker
+--SET position = 'Associate Professor'
+--WHERE id_speaker = 3;
+
+--UPDATE section
+--SET presiding = 'Nazar Vesna'
+--FROM section s
+--JOIN conference c ON s.conference_id = c.id_conference
+--WHERE c.name_conference = 'Tech Conference 2023';
+--INSERT INTO conference (id_conference, name_conference, period_start, period_end, building)
+--VALUES (3, 'Nature Problems 2023', '2023-06-01', '2023-06-03', 'Conference Center C');
+
+--INSERT INTO section (id_section, name_section, sequence_number, presiding, designated_room, conference_id)
+--VALUES (3, 'Global Warming', 3, 'John Snow', 'Main Room', 3),
+--       (4, 'Magnetic Storms', 4, 'Magneto', 'Big Room C', 3);
+
+--INSERT INTO performance_equipment (performance_id, equipment_id)
+--SELECT p.id_perfomance, e.id_equipment
+--FROM performance p, equipment e
+--WHERE p.topic = 'Presentation' AND e.name = 'Laptop';
+
+--DELETE FROM performer_section;
+
+--DELETE FROM performance_equipment
+--WHERE performance_id IN(1,3);
+		*Lab 3*
+--CREATE OR ALTER PROCEDURE CalculateConferenceRating
+--    @ConferenceId INT
+--AS
+--BEGIN
+--    DECLARE @rating FLOAT;
+--    -- compute the rating
+--    SELECT @rating = (COUNT(DISTINCT p.Speaker_id) +
+--                     AVG(CASE s.Scientific_degree WHEN 'PhD' THEN 3 WHEN 'Master' THEN 2 ELSE 1 END) +
+--                     AVG(CASE eq.name WHEN 'Microphone' THEN 1 WHEN 'Projector' THEN 2 ELSE 3 END) *  1.5 + 
+--					 AVG(CASE p.Duration WHEN 45 THEN 1 WHEN 60 THEN 2 WHEN 90 THEN 3 END)  / COUNT(DISTINCT p.Speaker_id))
+--    FROM Performance p
+--    INNER JOIN Speaker s ON p.Speaker_id = s.id_speaker
+--    INNER JOIN Section sec ON p.Section_id = sec.id_section
+--    LEFT JOIN Equipment eq ON p.Id_PerFomance = eq.id_equipment
+--    WHERE sec.Conference_id = @ConferenceId
+--    GROUP BY sec.Conference_id;
+--	  -- Limit the rating to 10
+--    IF @rating > 10
+--      SET @rating = 10;
+--    -- update the rating in the Conference table
+--    UPDATE Conference
+--    SET Rating_of_conference = @rating
+--    WHERE id_conference = @ConferenceId;
+--	  PRINT 'The computed rating for conference with id '+CAST(@ConferenceId AS VARCHAR(20))+' is: ' + CAST(@rating AS VARCHAR(20));
+--END
+--EXEC CalculateConferenceRating 1;
+
+----DROP PROCEDURE CalculateConferenceRating;
+--CREATE OR ALTER PROCEDURE CalculateRatingForAllConferencesInPeriod
+--    @startDate DATETIME,
+--    @endDate DATETIME
+--AS
+--BEGIN
+--    DECLARE @conferenceId INT;
+--    DECLARE ConferenceCursor CURSOR FOR 
+--        SELECT id_conference 
+--        FROM Conference 
+--        WHERE period_start >= @startDate AND period_end <= @endDate;
+
+--    OPEN ConferenceCursor;
+--    FETCH NEXT FROM ConferenceCursor INTO @conferenceId;
+    
+--    WHILE @@FETCH_STATUS = 0
+--    BEGIN 
+--        EXEC CalculateConferenceRating @conferenceId = @conferenceId;
+--        FETCH NEXT FROM ConferenceCursor INTO @conferenceId;
+--    END;
+
+--    CLOSE ConferenceCursor;
+--    DEALLOCATE ConferenceCursor;
+--END;
+--EXEC CalculateRatingForAllConferencesInPeriod '2023-05-01 00:00:00.000', '2023-10-06 00:00:00.000' 
+		*Lab 4*
+--ALTER TABLE Labs.dbo.conference ADD UCR VARCHAR(255), DCR DATETIME, ULC VARCHAR(255), DLC DATETIME;
+--ALTER TABLE Labs.dbo.equipment ADD UCR VARCHAR(255), DCR DATETIME, ULC VARCHAR(255), DLC DATETIME;
+--ALTER TABLE Labs.dbo.performance ADD UCR VARCHAR(255), DCR DATETIME, ULC VARCHAR(255), DLC DATETIME;
+--ALTER TABLE Labs.dbo.section ADD UCR VARCHAR(255), DCR DATETIME, ULC VARCHAR(255), DLC DATETIME;
+--ALTER TABLE Labs.dbo.speaker ADD UCR VARCHAR(255), DCR DATETIME, ULC VARCHAR(255), DLC DATETIME;
+
+--CREATE TRIGGER trg_Conference_After_Insert
+--ON Conference
+--AFTER INSERT
+--AS
+--BEGIN
+--    UPDATE Conference
+--    SET UCR = SUSER_SNAME(),
+--        DCR = GETDATE()
+--    WHERE id_conference IN (SELECT id_conference FROM inserted)
+--END;
+
+--CREATE TRIGGER trg_Conference_InsteadOf_Update
+--ON Conference
+--INSTEAD OF UPDATE
+--AS
+--BEGIN
+--    UPDATE Conference
+--    SET 
+--        Name_conference = inserted.Name_conference,
+--        period_start = inserted.period_start,
+--        period_end = inserted.period_end,
+--        Building = inserted.Building,
+--        Rating_of_conference = inserted.Rating_of_conference,
+--        ULC = SUSER_SNAME(),
+--        DLC = GETDATE()
+--    FROM inserted
+--    WHERE Conference.id_conference = inserted.id_conference
+--END;
+
+--CREATE OR ALTER TRIGGER trg_Check_Performer_Section
+--ON performer_section
+--AFTER INSERT
+--AS
+--BEGIN
+--    IF EXISTS (
+--        SELECT 1 
+--        FROM performer_section
+--        WHERE performer_id IN (SELECT performer_id FROM inserted)
+--            AND Date IN (SELECT Date FROM inserted)
+--    )
+--    BEGIN
+--        RAISERROR('A performer can only perform in one section per day.', 16, 1);
+--        ROLLBACK TRANSACTION;
+--    END
+--END;
+
+--CREATE OR ALTER TRIGGER trg_Check_Performance_Room
+--ON Performance
+--AFTER INSERT
+--AS
+--BEGIN
+--    IF EXISTS (
+--        SELECT 1 
+--        FROM Performance p
+--        JOIN Section s ON p.Section_id = s.id_section
+--        WHERE s.Designated_room IN (SELECT Designated_room FROM Section JOIN inserted ON Section.id_section = inserted.Section_id)
+--            AND p.Start_time IN (SELECT Start_time FROM inserted)
+--    )
+--    BEGIN
+--        RAISERROR('Two sections cannot be held simultaneously in one room.', 16, 1);
+--        ROLLBACK TRANSACTION;
+--    END
+--END;
+		*Lab 5*
+---- Користувач "conference_manager", який відповідає за керування конференціями
+--CREATE LOGIN conference_manager WITH PASSWORD = 'ConfMaNaGeR';
+--CREATE USER conference_manager FOR LOGIN conference_manager;
+
+---- Користувач "section_manager", який керує секціями конференції
+--CREATE LOGIN section_manager WITH PASSWORD = 'SectionMaNaGeR';
+--CREATE USER section_manager FOR LOGIN section_manager;
+
+---- Користувач "speaker_manager", який керує спікерами
+--CREATE LOGIN speaker_manager WITH PASSWORD = 'SPEAKER';
+--CREATE USER speaker_manager FOR LOGIN speaker_manager;
+
+---- Користувач "performance_manager", який відповідає за організацію виступів
+--CREATE LOGIN performance_manager WITH PASSWORD = 'Perform';
+--CREATE USER performance_manager FOR LOGIN performance_manager;
+
+-- Надання привілеїв користувачам
+--GRANT SELECT, INSERT, UPDATE, DELETE ON conference TO conference_manager;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Section TO section_manager;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Speaker TO speaker_manager;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Performance TO performance_manager;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Equipment TO performance_manager;
+
+--CREATE ROLE conference_role;
+--CREATE ROLE performance_role;
+--CREATE ROLE section_role;
+--CREATE ROLE speaker_role;
+--CREATE ROLE user_role;
+
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Conference TO conference_role;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Performance TO performance_role;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Equipment TO performance_role;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Section TO section_role;
+--GRANT SELECT, INSERT, UPDATE, DELETE ON Speaker TO speaker_role;
+
+----FOR USER
+--GRANT SELECT ON Conference TO user_role;
+--GRANT SELECT ON Performance TO user_role;
+--GRANT SELECT ON Equipment TO user_role;
+--GRANT SELECT ON Section TO user_role;
+--GRANT SELECT ON Speaker TO user_role;
+
+--REVOKE SELECT, INSERT, UPDATE, DELETE ON Conference FROM conference_manager;
+
+--ALTER ROLE conference_role DROP MEMBER conference_manager;
+
+--DROP ROLE conference_role;
+--DROP LOGIN conference_manager;
