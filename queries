@@ -1,0 +1,105 @@
+*Lab 1*
+use Labs
+CREATE TABLE conference (
+  id_conference INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
+  name_conference VARCHAR(255) NOT NULL,
+  period_start DATETIME NOT NULL,
+  period_end DATETIME NOT NULL,
+  building VARCHAR(255) NOT NULL,
+  rating_of_conference FLOAT NOT NULL
+);
+
+CREATE TABLE section (
+  id_section INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
+  name_section VARCHAR(255) NOT NULL,
+  sequence_number INT NOT NULL,
+  presiding VARCHAR(255) NOT NULL,
+  designated_room VARCHAR(255) NOT NULL,
+  conference_id INT NOT NULL,
+  FOREIGN KEY (conference_id) REFERENCES conference(id_conference) 
+);
+
+CREATE TABLE speaker (
+  id_speaker INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
+  name_speaker VARCHAR(255) NOT NULL,
+  scientific_degree VARCHAR(255) NOT NULL,
+  place_of_work VARCHAR(255) NOT NULL,
+  position VARCHAR(255) NOT NULL,
+  professional_bio TEXT NOT NULL
+);
+
+CREATE TABLE performance (
+  id_perfomance INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
+  topic VARCHAR(255) NOT NULL,
+  start_time DATETIME NOT NULL,
+  duration INT NOT NULL,
+  rating_of_perfomance FLOAT NOT NULL,
+  section_id INT NOT NULL,
+  speaker_id INT NOT NULL,
+  FOREIGN KEY (section_id) REFERENCES section(id_section) ,
+  FOREIGN KEY (speaker_id) REFERENCES speaker(id_speaker) 
+);
+
+CREATE TABLE equipment (
+  id_equipment INT IDENTITY(1, 1) PRIMARY KEY NOT NULL,
+  name VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE performance_equipment (
+  performance_id INT NOT NULL,
+  equipment_id INT NOT NULL,
+  PRIMARY KEY (performance_id, equipment_id),
+  FOREIGN KEY (performance_id) REFERENCES performance(id_perfomance),
+  FOREIGN KEY (equipment_id) REFERENCES equipment(id_equipment)
+);
+
+CREATE TABLE performer_section (
+  performer_id INT NOT NULL,
+  section_id INT NOT NULL,
+  date DATE NOT NULL,
+  PRIMARY KEY (performer_id, section_id, date),
+  FOREIGN KEY (performer_id) REFERENCES speaker(id_speaker),
+  FOREIGN KEY (section_id) REFERENCES section(id_section)
+);
+*Insert*
+-- Insert data into the conference table
+INSERT INTO conference (name_conference, period_start, period_end, building, rating_of_conference)
+VALUES ( 'Tech Conference 2023', '2023-10-01', '2023-10-03', 'Conference Center A', '9.8'),
+	   ( 'Cooking Conference 2023', '2023-05-01', '2023-05-06', 'Conference Center B', '8.5');
+
+-- Insert data into the section table
+INSERT INTO section (name_section, sequence_number, presiding, designated_room, conference_id)
+VALUES ( 'Keynote Address', 1, 'John Smith', 'Main Hall', 1),
+       ( 'Panel Discussion: AI in Healthcare', 2, 'Jane Doe', 'Room B', 2);
+
+-- Insert data into the speaker table
+INSERT INTO speaker (name_speaker, scientific_degree, place_of_work, position, professional_bio)
+VALUES ( 'John Smith', 'PhD', 'University of California', 'Professor', 'John Smith is a leading expert in computer science...'),
+       ( 'Jane Doe', 'MD', 'Stanford Medical Center', 'Chief Medical Officer', 'Jane Doe has worked in healthcare...'),
+       ( 'Bob Johnson', 'PhD', 'IBM Research', 'Research Scientist', 'Bob Johnson has published several papers...');
+
+-- Insert data into the performance table
+INSERT INTO performance (topic, start_time, duration, rating_of_perfomance, section_id, speaker_id)
+VALUES ( 'The Future of AI', '2023-10-01 09:00:00', 60, '9.8', 1, 1),
+       ( 'AI in Healthcare: Challenges and Opportunities', '2023-10-02 10:00:00', 90, '7.4', 2, 2),
+       ( 'Advances in Natural Language Processing', '2023-10-03 11:00:00', 45, '9.6', 2, 1);
+
+-- Insert data into the equipment table
+INSERT INTO equipment (name)
+VALUES ('Microphone'),
+       ('Projector'),
+       ('Laptop');
+
+-- Insert data into the performance_equipment table
+INSERT INTO performance_equipment (performance_id, equipment_id)
+VALUES (1, 1),
+       (2, 2),
+       (3, 2),
+       (3, 3);
+
+-- Insert data into the performer_section table
+INSERT INTO performer_section (performer_id, section_id, date)
+VALUES (1, 1, '2023-10-01'),
+       (2, 2, '2023-10-02'),
+       (3, 2, '2023-10-02');
+*Lab2*
